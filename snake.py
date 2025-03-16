@@ -2,6 +2,7 @@ import tkinter
 import random  
 from tkinter import messagebox
 
+# Constants
 ROWS = 25
 COLS = 25
 TILE_SIZE = 25
@@ -32,7 +33,6 @@ screen_height = window.winfo_screenheight()
 window_x = int((screen_width / 2) - (window_width / 2))
 window_y = int((screen_height / 2) - (window_height / 2))
 
-# Format "(w)x(h)+(x)+(y)"
 window.geometry(f"{window_width}x{window_height}+{window_x}+{window_y}")
 
 # Game variables
@@ -45,8 +45,10 @@ game_over = False
 score = 0
 
 def reset_game():
-    """Resets the game state."""
+    """Resets the game state and restarts the loop correctly."""
     global snake, food, velocityX, velocityY, snake_body, game_over, score
+
+    # Reset game variables
     snake = Tile(TILE_SIZE * 5, TILE_SIZE * 5)  # Reset snake position
     food = Tile(TILE_SIZE * 10, TILE_SIZE * 10)  # Reset food position
     velocityX = 0
@@ -54,7 +56,9 @@ def reset_game():
     snake_body = []  # Empty the snake body
     game_over = False
     score = 0
-    draw()  # Restart the game loop
+
+    # 🔄 Restart the game loop correctly (Only one `window.after()` call)
+    window.after(200, draw)
 
 def change_direction(e):
     """Handles key press events to change the snake's direction."""
@@ -121,11 +125,11 @@ def move():
     snake.y += velocityY * TILE_SIZE
 
 def draw():
-    """Renders the game elements."""
+    """Renders the game elements and updates the game loop."""
     global snake, food, snake_body, game_over, score
 
-    move()
-    canvas.delete("all")
+    move()  # Move the snake
+    canvas.delete("all")  # Clear the canvas
 
     # Draw food
     canvas.create_rectangle(food.x, food.y, food.x + TILE_SIZE, food.y + TILE_SIZE, fill='red')
@@ -136,12 +140,15 @@ def draw():
     for tile in snake_body:
         canvas.create_rectangle(tile.x, tile.y, tile.x + TILE_SIZE, tile.y + TILE_SIZE, fill='lime green')
 
+    # Display Game Over message
     if game_over:
         canvas.create_text(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, font="Arial 20", text=f"Game Over: {score}", fill="white")
     else:
         canvas.create_text(30, 20, font="Arial 10", text=f"Score: {score}", fill="white")
 
-    window.after(150, draw)  
+    # 🏁 Schedule the next frame (only one active at a time)
+    if not game_over:
+        window.after(200, draw)
 
 def ask_restart():
     """Displays a restart prompt when the game is over."""
